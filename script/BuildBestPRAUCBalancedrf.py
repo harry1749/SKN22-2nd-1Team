@@ -159,6 +159,7 @@ def main() -> None:
     artifact = {
         "pipeline": pipeline,
         "best_params": {f"model__{k}": v for k, v in BEST_PARAMS.items()},
+        "best_threshold": 0.5, # Fixed threshold for PR-AUC model (or use args.threshold if added)
         "cv_best_pr_auc": float(PAST_BEST_CV_PR_AUC),
         "test_metrics": test_metrics,
         "num_cols": num_cols,
