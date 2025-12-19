@@ -1,17 +1,33 @@
+from __future__ import annotations
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import sys
 from pathlib import Path
 
+from ui.header import render_header
+
+
+render_header()
+from service.session_probability_service import (
+    SessionProbabilityService,
+    SessionPredictionResult,
+)
+
+st.set_page_config(page_title="chennel_effect", layout="wide")
 # --------------------------------------------------------------------------------
 # 0. 경로 설정
 # --------------------------------------------------------------------------------
-root_path = Path(__file__).resolve().parent.parent.parent
-if str(root_path) not in sys.path:
-    sys.path.append(str(root_path))
+@st.cache_resource
+def get_session_probability_service() -> SessionProbabilityService:
+    """
+    - 모델/어댑터는 여기서 한 번만 로드 (Streamlit 캐싱)
+    - Global 평균 값은 추후 실제 데이터 기준으로 수정 가능
+    """
+    return SessionProbabilityService(global_avg_purchase_prob=0.15)
 
-from src.adapters.dataset_loader import DatasetLoader
+
+service = get_session_probability_service()
 
 # --------------------------------------------------------------------------------
 # 1. 페이지 설정 및 데이터 로드
@@ -23,15 +39,15 @@ st.set_page_config(
 )
 
 @st.cache_data
-def load_data_from_adapter():
-    loader = DatasetLoader(base_path=root_path)
+def load_data_from_service():
+    """Service를 통해 학습 데이터를 로드합니다."""
     try:
-        return loader.load_train_data()
-    except FileNotFoundError as e:
+        return service.get_training_data()
+    except Exception as e:
         st.error(f"❌ 데이터 로드 실패: {e}")
         return None
 
-df = load_data_from_adapter()
+df = load_data_from_service()
 
 if df is not None:
     st.title("📢 채널 및 지역 효과 분석")
