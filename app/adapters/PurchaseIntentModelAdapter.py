@@ -59,3 +59,44 @@ class PurchaseIntentModelAdapter:
 
     def get_threshold(self) -> float:
         return float(self.load().best_threshold)
+
+    def get_training_data(self) -> pd.DataFrame:
+        """
+        학습에 사용된 원본 데이터를 로드하여 반환합니다.
+        (EDA 및 시각화용)
+        
+        PurchaseIntentModelAdapterConfig와 유사한 Robust Path Logic 사용
+        """
+        # 현재 파일: app/adapters/PurchaseIntentModelAdapter.py
+        adapter_dir = Path(__file__).resolve().parent
+        app_dir = adapter_dir.parent
+        
+        candidates = [
+            app_dir.parent,      # Standard ROOT
+            app_dir,             # app is root?
+            Path.cwd(),          # CWD
+        ]
+        
+        root_dir = candidates[0]
+        for candidate in candidates:
+            if (candidate / "data").exists():
+                root_dir = candidate
+                break
+        
+        # 우선순위: app/artifacts/train.csv (Self-contained) -> data/processed/train.csv (Original)
+        # Plan 500: We copied data to app/artifacts/train.csv
+        artifact_data = app_dir / "artifacts" / "train.csv"
+        if artifact_data.exists():
+            data_path = artifact_data
+        else:
+            data_path = root_dir / "data" / "processed" / "train.csv"
+
+        if not data_path.exists():
+            raise FileNotFoundError(f"Training data not found at: {data_path}")
+
+        df = pd.read_csv(data_path)
+        # Model was trained with row_id included (implicit feature), so we must NOT drop it
+        # if "row_id" in df.columns:
+        #     df = df.drop(columns=["row_id"])
+        
+        return df

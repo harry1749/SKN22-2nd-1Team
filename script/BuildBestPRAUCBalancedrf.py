@@ -53,10 +53,19 @@ PAST_BEST_CV_PR_AUC = 0.7559602666233075
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Build artifact with fixed best PR-AUC params (BalancedRF).")
-    p.add_argument("--train", type=str, default="data/processed/train.csv", help="Path to train.csv")
-    p.add_argument("--test", type=str, default="data/processed/test.csv", help="Path to test.csv (optional for eval)")
+    
+    # script/BuildBestPRAUCBalancedrf.py -> parent=script -> parent.parent=ROOT
+    root = Path(__file__).resolve().parent.parent
+    
+    default_train = root / "data" / "processed" / "train.csv"
+    default_test = root / "data" / "processed" / "test.csv"
+    # User wanted ../app/artifacts, which means ROOT/app/artifacts
+    default_out = root / "app" / "artifacts" / "best_pr_auc_balancedrf.joblib"
+
+    p.add_argument("--train", type=str, default=str(default_train), help="Path to train.csv")
+    p.add_argument("--test", type=str, default=str(default_test), help="Path to test.csv (optional for eval)")
     p.add_argument("--target", type=str, default="Revenue", help="Target column name")
-    p.add_argument("--out", type=str, default="../app/artifacts/best_pr_auc_balancedrf.joblib", help="Output joblib path")
+    p.add_argument("--out", type=str, default=str(default_out), help="Output joblib path")
 
     p.add_argument("--random_state", type=int, default=42, help="Random seed")
     p.add_argument("--no_eval", action="store_true", help="Skip evaluation even if test has label")
@@ -150,6 +159,7 @@ def main() -> None:
     artifact = {
         "pipeline": pipeline,
         "best_params": {f"model__{k}": v for k, v in BEST_PARAMS.items()},
+        "best_threshold": 0.5, # Fixed threshold for PR-AUC model (or use args.threshold if added)
         "cv_best_pr_auc": float(PAST_BEST_CV_PR_AUC),
         "test_metrics": test_metrics,
         "num_cols": num_cols,
