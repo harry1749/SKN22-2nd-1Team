@@ -1,4 +1,4 @@
-# app/pages/02_persona_generator.py
+# app/pages/07_persona.py
 
 from __future__ import annotations
 
