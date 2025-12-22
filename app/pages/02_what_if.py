@@ -1,33 +1,31 @@
 # app/pages/02_what_if.py
+
+import sys, os
+
+# pages → app
+APP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if APP_DIR not in sys.path:
+    sys.path.insert(0, APP_DIR)
+
 import streamlit as st
 from ui.header import render_header
 
 render_header()
-
 st.set_page_config(page_title="What-if 시뮬레이터", layout="wide")
 
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-import streamlit as st
 import pandas as pd
 import joblib
 import altair as alt
 import numpy as np
 
 # -------------------------------
-# 0. 경로 고정
+# 데이터 / 모델 경로
 # -------------------------------
-import os
-
-# 현재 파일 위치: app/pages/02_what_if.py
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))  # pages → app → 2nd
+BASE_DIR = os.path.abspath(os.path.join(APP_DIR, ".."))  # app → 2nd
 TRAIN_PATH = os.path.join(BASE_DIR, "data/processed/train.csv")
 TEST_PATH = os.path.join(BASE_DIR, "data/processed/test.csv")
 MODEL_PATH = os.path.join(BASE_DIR, "app/artifacts/best_balancedrf_pipeline.joblib")
+
 
 
 # -------------------------------
